@@ -6,8 +6,10 @@
         <dynamic_title_structure/>
         <id>twilio_flex_workspace</id>
         <internal>false</internal>
+        <omit_watcher>false</omit_watcher>
         <public>false</public>
         <roles/>
+        <seo_script/>
         <short_description/>
         <sys_class_name>sp_page</sys_class_name>
         <sys_created_by>admin</sys_created_by>
@@ -22,6 +24,7 @@
         <sys_updated_by>admin</sys_updated_by>
         <sys_updated_on>2019-06-27 21:18:20</sys_updated_on>
         <title>Twilio Flex Workspace</title>
+        <use_seo_script>false</use_seo_script>
     </sp_page>
     <sys_translated_text action="delete_multiple" query="documentkey=bc8bbb69db1233006a0f924bdb9619b7"/>
 </record_update>
