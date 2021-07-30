@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl>cf9d01d3e73003009d6247e603f6a990</enforce_acl>
+        <http_method>POST</http_method>
+        <name>Find User From Phone</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+	var body = {};
+		response.setContentType('application/json');
+		
+		//read phone number in from Twilio request
+		var requestBody = request.body.data;
+		var phone = requestBody.phoneNumber;
+		
+		//find any users that have aphone number that matches the phone number from Twilio
+		var user_gr = new GlideRecord('sys_user');
+		user_gr.addActiveQuery();
+		user_gr.addEncodedQuery("phone="+ phone + "^ORhome_phone=" + phone + "^ORmobile_phone=" + phone);
+		user_gr.query();
+		
+		//exclude match if there is more than one result as this is likely a shared phone nnumber
+		if(user_gr.next() && user_gr.getRowCount()==1)
+			{
+			//add user information into the response object
+			body.name = user_gr.name;
+			body.first_name = user_gr.first_name;
+			body.sys_id = user_gr.sys_id;
+			body.title = user_gr.title.getDisplayValue();
+			body.department = user_gr.department.getDisplayValue();
+			body.location = user_gr.location.getDisplayValue();
+			body.sys_id = user_gr.sys_id.getDisplayValue();
+			
+			//lookup user tickets and add them to response body
+			var tickets =[];
+			var inc_gr = new GlideRecord('incident');
+			inc_gr.addEncodedQuery('caller_id='+user_gr.sys_id+'^active=true');
+			inc_gr.query();
+			body.num_tickets = inc_gr.getRowCount();
+			while(inc_gr.next())
+				{
+				var ticket = {};
+					ticket.number = inc_gr.number.getDisplayValue();
+					ticket.short_description = inc_gr.short_description.getDisplayValue();
+					ticket.state = inc_gr.state.getDisplayValue();
+					ticket.priority = inc_gr.priority.getDisplayValue();
+					//only add comments when the ticket is on hold as the ticket may not have a comment otherwise
+					if(ticket.state == 'On Hold')
+						ticket.last_comment = inc_gr.comments.getJournalEntry(1).toString().split('(Additional comments)')[1].trim();
+					tickets.push(ticket);
+				}
+				body.tickets = tickets;
+				response.setStatus(200);
+				
+				
+			}
+			else
+				{
+				//unable to find user
+				response.setStatus(404);
+			}
+			
+			response.setBody(body);
+		})(request, response);]]></operation_script>
+        <operation_uri>/api/x_8725_servicenow/twilio_flex/find_user_phone</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/find_user_phone</relative_path>
+        <request_example/>
+        <requires_acl_authorization>true</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>true</requires_snc_internal_role>
+        <short_description/>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-06-27 21:14:26</sys_created_on>
+        <sys_id>698ab369db1233006a0f924bdb961940</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>Find User From Phone</sys_name>
+        <sys_package display_value="ServiceNow Twilio Integration" source="x_8725_servicenow">10e83fe1db1233006a0f924bdb961947</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="ServiceNow Twilio Integration">10e83fe1db1233006a0f924bdb961947</sys_scope>
+        <sys_update_name>sys_ws_operation_698ab369db1233006a0f924bdb961940</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-07-30 22:22:51</sys_updated_on>
+        <web_service_definition display_value="Twilio Flex">017a7369db1233006a0f924bdb961940</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>
